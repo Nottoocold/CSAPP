@@ -27,7 +27,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${fileDirname}/${fileBasenameNoExtension}.out",
-            "args": ["../resources/demo.txt"],
+            "args": ["208.188.160.121"],
             "stopAtEntry": true,
             "cwd": "${fileDirname}",
             "environment": [],
