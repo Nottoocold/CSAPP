@@ -1,7 +1,5 @@
 #include "src/csapp.h"
 
-#define MAXLINE 64
-
 int main(void)
 {
     int n;

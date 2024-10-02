@@ -10,6 +10,8 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
+#define MAXLINE 64
+
 /**
  * RIO(Robust IO，健壮的IO包)
  */
