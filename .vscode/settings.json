@@ -3,6 +3,14 @@
         "stat.h": "c",
         "types.h": "c",
         "csapp.h": "c",
-        "assert.h": "c"
-    }
+        "assert.h": "c",
+        "internet": "c",
+        "string.h": "c",
+        "in.h": "c",
+        "inet.h": "c",
+        "socket.h": "c",
+        "features.h": "c",
+        "netdb.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "disabled"
 }

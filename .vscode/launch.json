@@ -27,7 +27,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${fileDirname}/${fileBasenameNoExtension}.out",
-            "args": ["208.188.160.121"],
+            "args": ["baidu.com"],
             "stopAtEntry": true,
             "cwd": "${fileDirname}",
             "environment": [],
