@@ -143,3 +143,107 @@ ssize_t rio_readnb(rio_t *rp, void *usrbuf, size_t n)
     }
     return n - nleft;
 }
+
+int open_clientfd(const char *hostname, const char *port)
+{
+    int clientfd;
+    struct addrinfo hints, *listp, *p;
+
+    // 设置 hints 结构体
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;       // 允许 IPv4
+    hints.ai_socktype = SOCK_STREAM; // 使用 TCP 套接字
+    hints.ai_flags = AI_NUMERICSERV; // 端口为数字形式
+    hints.ai_flags |= AI_ADDRCONFIG; // 仅使用可用的地址
+
+    // 获取地址信息
+    if (getaddrinfo(hostname, port, &hints, &listp) != 0)
+    {
+        fprintf(stderr, "getaddrinfo error\n");
+        return -1;
+    }
+
+    // 遍历所有地址并尝试连接
+    for (p = listp; p != NULL; p = p->ai_next)
+    {
+        // 创建套接字
+        clientfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
+        if (clientfd < 0)
+        {
+            continue; // 如果创建套接字失败，继续尝试下一个地址
+        }
+
+        // 连接到服务器
+        if (connect(clientfd, p->ai_addr, p->ai_addrlen) == 0)
+        {
+            break; // 连接成功
+        }
+
+        close(clientfd); // 连接失败，关闭套接字，继续尝试下一个地址
+    }
+
+    freeaddrinfo(listp); // 释放地址信息
+    if (p == NULL)
+    {
+        return -1; // 如果没有成功连接的地址
+    }
+
+    return clientfd; // 返回连接的套接字文件描述符
+}
+
+int open_listenfd(const char *port)
+{
+    int listenfd, optval = 1;
+    struct addrinfo hints, *listp, *p;
+
+    // 设置 hints 结构体
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;                   // 允许 IPv4
+    hints.ai_socktype = SOCK_STREAM;             // 使用 TCP 套接字
+    hints.ai_flags = AI_PASSIVE | AI_ADDRCONFIG; // 监听所有地址
+    hints.ai_flags |= AI_NUMERICSERV;            // 端口为数字形式
+
+    // 获取地址信息
+    if (getaddrinfo(NULL, port, &hints, &listp) != 0)
+    {
+        fprintf(stderr, "getaddrinfo error\n");
+        return -1;
+    }
+
+    // 遍历可用地址，找到可进行bind的端口
+    for (p = listp; p != NULL; p = p->ai_next)
+    {
+        // 创建套接字
+        listenfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
+        if (listenfd < 0)
+        {
+            continue; // 如果创建套接字失败，继续尝试下一个地址
+        }
+
+        // 设置 SO_REUSEADDR 选项
+        setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, (const void *)&optval, sizeof(int));
+
+        // 绑定到本地地址
+        if (bind(listenfd, p->ai_addr, p->ai_addrlen) == 0)
+        {
+            break; // 绑定成功
+        }
+
+        close(listenfd); // 绑定失败，关闭套接字，继续尝试下一个地址
+    }
+
+    freeaddrinfo(listp); // 释放地址信息
+    if (p == NULL)
+    {
+        return -1; // 如果没有成功绑定地址
+    }
+
+    // 开始监听
+    if (listen(listenfd, 1024) == 0)
+    {
+        return listenfd; // 监听成功
+    }
+
+    close(listenfd); // 监听失败，关闭套接字
+    return -1;
+}

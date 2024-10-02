@@ -7,6 +7,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <arpa/inet.h>
+#include <netdb.h>
+
 /**
  * RIO(Robust IO，健壮的IO包)
  */
@@ -50,3 +53,13 @@ ssize_t rio_readlineb(rio_t *rp, void *usrbuf, size_t maxlen);
  * 每次从rp最多读n字节到usrbuf
  */
 ssize_t rio_readnb(rio_t *rp, void *usrbuf, size_t n);
+
+/**
+ * 打开一个客户端连接到服务器hostname:port，返回文件描述符，任何<0的值表示出错
+ */
+int open_clientfd(const char *hostname, const char *port);
+
+/**
+ * 打开一个服务器监听端口port，返回文件描述符，任何<0的值表示出错
+ */
+int open_listenfd(const char *port);
