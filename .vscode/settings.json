@@ -10,7 +10,9 @@
         "inet.h": "c",
         "socket.h": "c",
         "features.h": "c",
-        "netdb.h": "c"
+        "netdb.h": "c",
+        "pthread.h": "c",
+        "mman.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }
