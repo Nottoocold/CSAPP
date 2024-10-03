@@ -147,17 +147,17 @@ ssize_t rio_readnb(rio_t *rp, void *usrbuf, size_t n)
 int open_clientfd(const char *hostname, const char *port)
 {
     int clientfd;
-    struct addrinfo hints, *listp, *p;
+    struct addrinfo _opt_conf, *listp, *p;
 
-    // 设置 hints 结构体
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET;       // 允许 IPv4
-    hints.ai_socktype = SOCK_STREAM; // 使用 TCP 套接字
-    hints.ai_flags = AI_NUMERICSERV; // 端口为数字形式
-    hints.ai_flags |= AI_ADDRCONFIG; // 仅使用可用的地址
+    // 设置调用getaddrinfo函数的选项结构体
+    memset(&_opt_conf, 0, sizeof(_opt_conf));
+    _opt_conf.ai_family = AF_INET;       // 允许 IPv4
+    _opt_conf.ai_socktype = SOCK_STREAM; // 使用 TCP 套接字
+    _opt_conf.ai_flags = AI_NUMERICSERV; // 服务为数字端口号形式
+    _opt_conf.ai_flags |= AI_ADDRCONFIG; // 仅使用可用的地址
 
     // 获取地址信息
-    if (getaddrinfo(hostname, port, &hints, &listp) != 0)
+    if (getaddrinfo(hostname, port, &_opt_conf, &listp) != 0)
     {
         fprintf(stderr, "getaddrinfo error\n");
         return -1;
@@ -176,6 +176,10 @@ int open_clientfd(const char *hostname, const char *port)
         // 连接到服务器
         if (connect(clientfd, p->ai_addr, p->ai_addrlen) == 0)
         {
+            // 打印连接的主机IP地址和端口号
+            char host[128], serv[16];
+            getnameinfo(p->ai_addr, p->ai_addrlen, host, sizeof(host), serv, sizeof(serv), NI_NUMERICHOST | NI_NUMERICSERV);
+            printf("Connected to %s:%s\n", host, serv);
             break; // 连接成功
         }
 
@@ -194,17 +198,17 @@ int open_clientfd(const char *hostname, const char *port)
 int open_listenfd(const char *port)
 {
     int listenfd, optval = 1;
-    struct addrinfo hints, *listp, *p;
+    struct addrinfo _opt_conf, *listp, *p;
 
-    // 设置 hints 结构体
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET;                   // 允许 IPv4
-    hints.ai_socktype = SOCK_STREAM;             // 使用 TCP 套接字
-    hints.ai_flags = AI_PASSIVE | AI_ADDRCONFIG; // 监听所有地址
-    hints.ai_flags |= AI_NUMERICSERV;            // 端口为数字形式
+    // 设置调用getaddrinfo函数的选项结构体
+    memset(&_opt_conf, 0, sizeof(_opt_conf));
+    _opt_conf.ai_family = AF_INET;                   // 允许 IPv4
+    _opt_conf.ai_socktype = SOCK_STREAM;             // 使用 TCP 套接字
+    _opt_conf.ai_flags = AI_PASSIVE | AI_ADDRCONFIG; // 获取到的socket会被服务器应作监听socket 监听所有地址
+    _opt_conf.ai_flags |= AI_NUMERICSERV;            // 服务为数字端口号形式
 
     // 获取地址信息
-    if (getaddrinfo(NULL, port, &hints, &listp) != 0)
+    if (getaddrinfo(NULL, port, &_opt_conf, &listp) != 0)
     {
         fprintf(stderr, "getaddrinfo error\n");
         return -1;
@@ -226,6 +230,10 @@ int open_listenfd(const char *port)
         // 绑定到本地地址
         if (bind(listenfd, p->ai_addr, p->ai_addrlen) == 0)
         {
+            // 打印绑定的主机IP地址和端口号
+            char host[128], serv[16];
+            getnameinfo(p->ai_addr, p->ai_addrlen, host, sizeof(host), serv, sizeof(serv), NI_NUMERICHOST | NI_NUMERICSERV);
+            printf("Listening on %s:%s\n", host, serv);
             break; // 绑定成功
         }
 

@@ -18,49 +18,44 @@
 
 int main(int argc, char *argv[])
 {
-    struct addrinfo *p, *listp, hints;
-    char buf[24];
+    struct addrinfo *p, *listp, _opt_conf;
+    char buf[32], host[256], port[16];
     int rc, flags;
 
-    if (argc != 2)
+    if (argc < 2)
     {
         fprintf(stderr, "Usage: %s <domain name or IP address>\n", argv[0]);
         return 1;
     }
+
     /* get a list of address information for the given domain name or IP address */
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_flags = AI_CANONNAME;   /* we want canonical name */
-    hints.ai_family = AF_INET;       /* we want IPv4 addresses */
-    hints.ai_socktype = SOCK_STREAM; /* we want TCP sockets */
-    rc = getaddrinfo(argv[1], NULL, &hints, &listp);
-    if (rc != 0)
+    memset(&_opt_conf, 0, sizeof(_opt_conf));
+    _opt_conf.ai_family = AF_INET;       /* we want IPv4 addresses */
+    _opt_conf.ai_socktype = SOCK_STREAM; /* we want TCP sockets */
+
+    for (int i = 1; i < argc; i++)
     {
-        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rc));
-        return 1;
-    }
-    /* print the address information for each address */
-    for (p = listp; p != NULL; p = p->ai_next)
-    {
-        printf("Family: %d, Socket type: %d, Protocol: %d\n", p->ai_family, p->ai_socktype, p->ai_protocol);
-        printf("Canonical name: %s\n", p->ai_canonname ? p->ai_canonname : "(none)");
-        printf("Address length: %d\n", p->ai_addrlen);
-        printf("Address: ");
-        switch (p->ai_family)
+        rc = getaddrinfo(argv[i], NULL, &_opt_conf, &listp);
+        if (rc != 0)
         {
-        case AF_INET:
-            struct sockaddr_in *addr4 = (struct sockaddr_in *)p->ai_addr;
-            printf("%s\n", inet_ntop(p->ai_family, &addr4->sin_addr, buf, sizeof(buf)));
-            break;
-        case AF_INET6:
-            struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *)p->ai_addr;
-            printf("%s\n", inet_ntop(p->ai_family, &addr6->sin6_addr, buf, sizeof(buf)));
-            break;
-        default:
-            printf("(unknown)\n");
-            break;
+            fprintf(stderr, "getaddrinfo(%s): %s\n", argv[i], gai_strerror(rc));
+            continue;
         }
+        printf("======%s======\n", argv[i]);
+        /* print the address information for each address */
+        for (p = listp; p != NULL; p = p->ai_next)
+        {
+
+            struct sockaddr_in *addr4 = (struct sockaddr_in *)p->ai_addr;
+            inet_ntop(p->ai_family, &addr4->sin_addr, buf, sizeof(buf));
+            printf("%s\n", buf);
+            /* getnameinfo(p->ai_addr, p->ai_addrlen, host, sizeof(host), NULL, 0, NI_NUMERICHOST);
+            printf("%s\n", host); */
+        }
+        /* free the address information list */
+        freeaddrinfo(listp);
+        printf("======%s======\n", argv[i]);
     }
-    /* free the address information list */
-    freeaddrinfo(listp);
+
     return 0;
 }
