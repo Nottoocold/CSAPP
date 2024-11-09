@@ -12,7 +12,8 @@
         "features.h": "c",
         "netdb.h": "c",
         "pthread.h": "c",
-        "mman.h": "c"
+        "mman.h": "c",
+        "select.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }
