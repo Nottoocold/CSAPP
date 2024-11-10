@@ -13,7 +13,9 @@
         "netdb.h": "c",
         "pthread.h": "c",
         "mman.h": "c",
-        "select.h": "c"
+        "select.h": "c",
+        "semaphore.h": "c",
+        "wordsize.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }
